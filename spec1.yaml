@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Tiny Example API 2
+  title: Tiny Example API 3
   version: 1.0.0
 
 servers:
