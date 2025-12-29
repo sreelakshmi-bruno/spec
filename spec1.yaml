@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Tiny Example API
+  title: Tiny Example API 2
   version: 1.0.0
 
 servers:
@@ -9,7 +9,7 @@ servers:
 paths:
   /health:
     get:
-      summary: Health check
+      summary: Health check 1
       responses:
         "200":
           description: OK
