@@ -9,7 +9,7 @@ servers:
 paths:
   /health:
     get:
-      summary: Health check 2
+      summary: Health check 3
       responses:
         "200":
           description: OK
