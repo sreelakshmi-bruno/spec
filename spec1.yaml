@@ -23,3 +23,23 @@ paths:
                 required: [status]
               example:
                 status: ok
+
+  /info:
+    get:
+      summary: API information
+      responses:
+        "200":
+          description: API metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  version:
+                    type: string
+                required: [name, version]
+              example:
+                name: Tiny Example API 3
+                version: 1.0.0
