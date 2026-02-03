@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Tiny Example API 3
-  version: 1.0.0
+  version: 1.1.0
 
 servers:
   - url: https://api.example.com
@@ -9,7 +9,14 @@ servers:
 paths:
   /health:
     get:
-      summary: Health check 5
+      summary: Service health check endpoint
+      parameters:
+        - name: verbose
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Include detailed health info
       responses:
         "200":
           description: OK
@@ -20,29 +27,98 @@ paths:
                 properties:
                   status:
                     type: string
+                  uptime:
+                    type: integer
                 required: [status]
               example:
                 status: ok
+                uptime: 3600
 
-  /info:
+  /status:
     get:
-      summary: API information
+      summary: Get system status
       responses:
         "200":
-          description: API metadata
+          description: System status
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  database:
+                    type: string
+                  cache:
+                    type: string
+                required: [database, cache]
+              example:
+                database: connected
+                cache: active
+
+  /users:
+    get:
+      summary: List all users
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    email:
+                      type: string
+                  required: [id, email]
+              example:
+                - id: "1"
+                  email: user@example.com
+
+    post:
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                name:
+                  type: string
+              required: [email]
+            example:
+              email: newuser@example.com
+              name: New User
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  email:
+                    type: string
                   name:
                     type: string
-                  version:
-                    type: string
-                required: [name, version]
+                required: [id, email]
               example:
-                name: Tiny Example API 3
-                version: 1.0.0
+                id: "2"
+                email: newuser@example.com
+                name: New User
 
   /items:
     post:
