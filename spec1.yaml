@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Tiny Example API 3
-  version: 1.1.0
+  version: 1.3.0
 
 servers:
   - url: https://api.example.com
@@ -9,7 +9,7 @@ servers:
 paths:
   /health:
     get:
-      summary: Service health check endpoint
+      summary: Health status endpoint
       parameters:
         - name: verbose
           in: query
@@ -34,26 +34,6 @@ paths:
                 status: ok
                 uptime: 3600
 
-  /status:
-    get:
-      summary: Get system status
-      responses:
-        "200":
-          description: System status
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  database:
-                    type: string
-                  cache:
-                    type: string
-                required: [database, cache]
-              example:
-                database: connected
-                cache: active
-
   /users:
     get:
       summary: List all users
@@ -63,7 +43,14 @@ paths:
           required: false
           schema:
             type: integer
-            default: 10
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Pagination offset
       responses:
         "200":
           description: List of users
@@ -96,10 +83,14 @@ paths:
                   type: string
                 name:
                   type: string
-              required: [email]
+                password:
+                  type: string
+                  minLength: 8
+              required: [email, password]
             example:
               email: newuser@example.com
               name: New User
+              password: securepass123
       responses:
         "201":
           description: User created
@@ -120,6 +111,19 @@ paths:
                 email: newuser@example.com
                 name: New User
 
+  /users/{id}:
+    delete:
+      summary: Delete a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: User deleted
+
   /items:
     post:
       summary: Add an item
@@ -132,9 +136,17 @@ paths:
               properties:
                 name:
                   type: string
+                description:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
               required: [name]
             example:
               name: Sample item
+              description: A sample item description
+              tags: [new, featured]
       responses:
         "201":
           description: Item created
@@ -147,14 +159,46 @@ paths:
                     type: string
                   name:
                     type: string
+                  description:
+                    type: string
                 required: [id, name]
               example:
                 id: "123"
                 name: Sample item
+                description: A sample item description
 
   /items/{id}:
+    get:
+      summary: Get item by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Item details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  created_at:
+                    type: string
+                    format: date-time
+                required: [id, name]
+              example:
+                id: "123"
+                name: Sample item
+                created_at: "2024-01-15T10:30:00Z"
+
     put:
-      summary: Modify an item
+      summary: Update an item
       parameters:
         - name: id
           in: path
@@ -170,9 +214,12 @@ paths:
               properties:
                 name:
                   type: string
+                description:
+                  type: string
               required: [name]
             example:
               name: Updated item
+              description: Updated description
       responses:
         "200":
           description: Item updated
@@ -190,14 +237,148 @@ paths:
                 id: "123"
                 name: Updated item
 
-    delete:
-      summary: Delete an item
+  /products:
+    post:
+      summary: Create a new product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                price:
+                  type: number
+                category:
+                  type: string
+              required: [name, price]
+            example:
+              name: New Widget
+              price: 29.99
+              category: electronics
+      responses:
+        "201":
+          description: Product created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  price:
+                    type: number
+                required: [id, name, price]
+              example:
+                id: "p2"
+                name: New Widget
+                price: 29.99
+
+  /products/{id}:
+    patch:
+      summary: Partially update a product
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                price:
+                  type: number
+                category:
+                  type: string
+            example:
+              price: 24.99
       responses:
-        "204":
-          description: Item deleted
+        "200":
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  price:
+                    type: number
+                required: [id, name, price]
+              example:
+                id: "p1"
+                name: Widget
+                price: 24.99
+
+  /orders:
+    get:
+      summary: List all orders
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [pending, completed, cancelled]
+          description: Filter by order status
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    user_id:
+                      type: string
+                    total:
+                      type: number
+                    status:
+                      type: string
+                  required: [id, user_id, total, status]
+              example:
+                - id: "ord-123"
+                  user_id: "1"
+                  total: 39.98
+                  status: pending
+
+  /categories:
+    get:
+      summary: List all categories
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    description:
+                      type: string
+                  required: [id, name]
+              example:
+                - id: "cat-1"
+                  name: Electronics
+                  description: Electronic devices and gadgets
