@@ -37,10 +37,14 @@ paths:
                     type: string
                   uptime:
                     type: integer
-                required: [status]
+                  timestamp:
+                    type: string
+                    format: date-time
+                required: [status, timestamp]
               example:
                 status: ok
                 uptime: 3600
+                timestamp: "2024-01-15T10:30:00Z"
 
   /users:
     get:
@@ -60,6 +64,13 @@ paths:
             type: integer
             default: 0
           description: Pagination offset
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
       responses:
         "200":
           description: List of users
@@ -126,6 +137,36 @@ paths:
                 name: New User
 
   /users/{id}:
+    get:
+      summary: Get a specific user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  email:
+                    type: string
+                  name:
+                    type: string
+                required: [id, email]
+              example:
+                id: "1"
+                email: user@example.com
+                name: John Doe
+        "404":
+          description: User not found
+
     delete:
       summary: Delete a user
       parameters:
@@ -137,6 +178,125 @@ paths:
       responses:
         "204":
           description: User deleted
+
+  /products:
+    get:
+      summary: List all products
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by category
+      responses:
+        "200":
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    price:
+                      type: number
+                    category:
+                      type: string
+                  required: [id, name, price]
+              example:
+                - id: "p1"
+                  name: Widget
+                  price: 29.99
+                  category: electronics
+
+    post:
+      summary: Create a new product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                price:
+                  type: number
+                category:
+                  type: string
+              required: [name, price]
+            example:
+              name: New Widget
+              price: 29.99
+              category: electronics
+      responses:
+        "201":
+          description: Product created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  price:
+                    type: number
+                required: [id, name, price]
+              example:
+                id: "p2"
+                name: New Widget
+                price: 29.99
+
+  /products/{id}:
+    patch:
+      summary: Partially update a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                price:
+                  type: number
+                category:
+                  type: string
+            example:
+              price: 24.99
+      responses:
+        "200":
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  price:
+                    type: number
+                required: [id, name, price]
+              example:
+                id: "p1"
+                name: Widget
+                price: 24.99
 
   /items:
     post:
@@ -257,91 +417,6 @@ paths:
               example:
                 id: "123"
                 name: Updated item
-
-  /products:
-    post:
-      summary: Create a new product
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                price:
-                  type: number
-                category:
-                  type: string
-              required: [name, price]
-            example:
-              name: New Widget
-              price: 29.99
-              category: electronics
-      responses:
-        "201":
-          description: Product created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  name:
-                    type: string
-                  price:
-                    type: number
-                required: [id, name, price]
-              example:
-                id: "p2"
-                name: New Widget
-                price: 29.99
-
-  /products/{id}:
-    patch:
-      summary: Partially update a product
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                price:
-                  type: number
-                category:
-                  type: string
-            example:
-              price: 24.99
-      responses:
-        "200":
-          description: Product updated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  name:
-                    type: string
-                  price:
-                    type: number
-                required: [id, name, price]
-              example:
-                id: "p1"
-                name: Widget
-                price: 24.99
 
   /orders:
     get:
