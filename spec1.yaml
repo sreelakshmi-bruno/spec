@@ -9,7 +9,7 @@ servers:
 paths:
   /health:
     get:
-      summary: Check API health and uptime
+      summary: Check service health status and availability
       parameters:
         - name: verbose
           in: query
@@ -64,13 +64,6 @@ paths:
             type: integer
             default: 0
           description: Pagination offset
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 1
-          description: Page number for pagination
       responses:
         "200":
           description: List of users
@@ -418,6 +411,20 @@ paths:
                 id: "123"
                 name: Updated item
 
+    delete:
+      summary: Delete an item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Item deleted
+        "404":
+          description: Item not found
+
   /orders:
     get:
       summary: Retrieve orders with optional filters
@@ -436,6 +443,13 @@ paths:
             type: integer
             default: 20
           description: Maximum number of orders to return
+        - name: date_from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filter orders from this date onwards
       responses:
         "200":
           description: List of orders
@@ -461,19 +475,27 @@ paths:
                   total: 39.98
                   status: pending
 
-  /categories:
+  /reviews:
     get:
-      summary: Retrieve product categories
+      summary: List product reviews
       parameters:
-        - name: active
+        - name: product_id
           in: query
           required: false
           schema:
-            type: boolean
-          description: Filter to show only active categories
+            type: string
+          description: Filter reviews by product
+        - name: rating
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+          description: Filter by star rating
       responses:
         "200":
-          description: List of categories
+          description: List of reviews
           content:
             application/json:
               schema:
@@ -483,12 +505,60 @@ paths:
                   properties:
                     id:
                       type: string
-                    name:
+                    product_id:
                       type: string
-                    description:
+                    user_id:
                       type: string
-                  required: [id, name]
+                    rating:
+                      type: integer
+                    comment:
+                      type: string
+                  required: [id, product_id, rating]
               example:
-                - id: "cat-1"
-                  name: Electronics
-                  description: Electronic devices and gadgets
+                - id: "rev-1"
+                  product_id: "p1"
+                  user_id: "1"
+                  rating: 5
+                  comment: Great product!
+
+    post:
+      summary: Submit a product review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_id:
+                  type: string
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+              required: [product_id, rating]
+            example:
+              product_id: "p1"
+              rating: 4
+              comment: Good quality
+      responses:
+        "201":
+          description: Review created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  product_id:
+                    type: string
+                  rating:
+                    type: integer
+                required: [id, product_id, rating]
+              example:
+                id: "rev-2"
+                product_id: "p1"
+                rating: 4
