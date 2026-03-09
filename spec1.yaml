@@ -9,14 +9,14 @@ servers:
 paths:
   /health:
     get:
-      summary: Check service health status and availability
+      summary: Check service health status and availability 2
       parameters:
         - name: verbose
           in: query
           required: false
           schema:
             type: boolean
-          description: Include detailed health info
+          description: Include detailed health info 2
         - name: format
           in: query
           required: false
